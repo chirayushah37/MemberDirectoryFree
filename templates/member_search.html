@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card member-directory-summary">
+    <div class="member-directory-header">
+        <div>
+            <h2>Member Search</h2>
+            <p class="section-note">Search across all fields of approved member directory records.</p>
+        </div>
+    </div>
+</section>
+
+<section class="card member-section-card">
+    <form method="get">
+        <div class="grid">
+            <label class="full-width">
+                <span>Search Keyword</span>
+                <input type="text" name="q" value="{{ query }}" placeholder="Search by name, mobile, city, business, family member, activity, etc.">
+            </label>
+        </div>
+        <div class="button-row">
+            <button type="submit" class="btn-primary">Search</button>
+            <a class="btn-link" href="{{ url_for('member_search') }}">Clear</a>
+        </div>
+    </form>
+</section>
+
+<section class="card member-section-card">
+    {% if profiles %}
+        <div class="member-search-table-wrap">
+            <table class="member-search-table">
+                <thead>
+                    <tr>
+                        <th>Sr. No.</th>
+                        <th>Name</th>
+                        <th>Membership No.</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for profile in profiles %}
+                        <tr>
+                            <td>{{ profile['serial_number'] }}</td>
+                            <td>{{ profile['full_name'] or '-' }}</td>
+                            <td>{{ profile['membership_number'] or '-' }}</td>
+                            <td><a class="btn-link" href="{{ url_for('member_search_login', registration_id=profile['id']) }}">View</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="empty">No approved members matched your search.</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card bookings-card">
+    <div class="member-directory-header">
+        <h2>Admin Panel - Pathshala Interest Members</h2>
+        <div class="button-row">
+            <a class="btn-secondary" href="{{ url_for('admin_new_memberships') }}">New Membership Requests</a>
+            <a class="btn-secondary" href="{{ url_for('admin_advertise_members') }}">Advertise Members</a>
+            <a class="btn-secondary" href="{{ url_for('admin_discount_interest_members') }}">Discount Interest Members</a>
+            <a class="btn-secondary" href="{{ url_for('admin_sangh_activity_interest') }}">Sangh Activity Interest</a>
+            <a class="btn-secondary" href="{{ url_for('admin_members') }}">Member Directory Admin</a>
+        </div>
+    </div>
+
+    <p class="section-note">Family members who selected "Interested in Pathshala"</p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Registration ID</th>
+                    <th>Status</th>
+                    <th>Family Member</th>
+                    <th>Relation</th>
+                    <th>Sex</th>
+                    <th>Birthdate</th>
+                    <th>Age</th>
+                    <th>Mobile</th>
+                    <th>Education</th>
+                    <th>Head Of Family</th>
+                    <th>Membership No.</th>
+                    <th>Contact Mobile</th>
+                    <th>Updated At</th>
+                    <th>Approved At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profile in profiles %}
+                    <tr>
+                        <td>{{ profile['registration_id'] }}</td>
+                        <td><span class="status-badge status-{{ profile['approval_status'] }}">{{ profile['approval_status']|title }}</span></td>
+                        <td>{{ profile['name'] or '-' }}</td>
+                        <td>{{ profile['relation'] or '-' }}</td>
+                        <td>{{ profile['sex'] or '-' }}</td>
+                        <td>{{ profile['birthdate'] or '-' }}</td>
+                        <td>{{ profile['age'] or '-' }}</td>
+                        <td>{{ profile['mobile_number'] or '-' }}</td>
+                        <td>{{ profile['education'] or '-' }}</td>
+                        <td>{{ profile['head_of_family'] or '-' }}</td>
+                        <td>{{ profile['membership_number'] or '-' }}</td>
+                        <td>{{ profile['contact_mobile'] or '-' }}</td>
+                        <td>{{ profile['updated_at'] }}</td>
+                        <td>{{ profile['approved_at'] or '-' }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="14">No Pathshala interest members found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

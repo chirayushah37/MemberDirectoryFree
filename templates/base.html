@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Shree Alkpapuri Jain Sangh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="background-glow"></div>
+    <main class="page-wrap">
+        <header class="hero">
+            <img class="hero-image" src="{{ url_for('static', filename='header.jpeg') }}" alt="Shree Alkpapuri Jain Sangh">
+            {% if not hide_member_directory_hero_extras %}
+                <p class="hero-line-1">પ્રભુજી આપણા દ્વારે</p>
+                <p class="hero-line-2">સુંદર અવસર અને પ્રતિમાજી આપના ઘરે લાવવા માટેની વિનંતી ની વિગત</p>
+            {% endif %}
+            <div class="top-links no-print">
+                <a class="btn-link" href="{{ url_for('index') }}">Member Directory</a>
+                <a class="btn-link" href="{{ url_for('member_search') }}">Member Search</a>
+                <a class="btn-link" href="{{ url_for('matrimony') }}">Matrimony</a>
+                <a class="btn-link" href="{{ url_for('business_search') }}">Product Search</a>
+                <a class="btn-link" href="{{ url_for('job_listing') }}">Job Listing</a>
+                <a class="btn-link" href="{{ url_for('qrcode_page') }}">QR Code</a>
+                <a class="btn-link" href="{{ url_for('qrcode_scan') }}">Scan QR</a>
+                <a class="btn-link" href="{{ url_for('discount_card') }}">Discount Card</a>
+                <a class="btn-link" href="{{ url_for('new_membership') }}">New Membership</a>
+                <a class="btn-link" href="{{ url_for('admin_login') }}">Admin Login</a>
+            </div>
+            {% if marquee_text %}
+                <div class="site-marquee no-print" aria-label="Announcement">
+                    <div class="site-marquee-track">
+                        <span>{{ marquee_text }}</span>
+                        <span aria-hidden="true">{{ marquee_text }}</span>
+                    </div>
+                </div>
+            {% endif %}
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <section class="alerts no-print" aria-live="polite" aria-atomic="true">
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}" role="alert">
+                            <span class="alert-message">{{ message }}</span>
+                            <button type="button" class="alert-close" aria-label="Close message">x</button>
+                        </div>
+                    {% endfor %}
+                </section>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+        <footer class="site-footer">
+            Powered by Chirayu Software Solutions
+        </footer>
+    </main>
+    <script>
+    (() => {
+        const alertsContainer = document.querySelector('.alerts');
+        const alerts = document.querySelectorAll('.alert');
+        const removeContainerIfEmpty = () => {
+            if (alertsContainer && !alertsContainer.querySelector('.alert')) {
+                alertsContainer.remove();
+            }
+        };
+        alerts.forEach((alert) => {
+            const closeButton = alert.querySelector('.alert-close');
+            const dismiss = () => {
+                alert.classList.add('is-hiding');
+                window.setTimeout(() => {
+                    alert.remove();
+                    removeContainerIfEmpty();
+                }, 220);
+            };
+            if (closeButton) {
+                closeButton.addEventListener('click', dismiss);
+            }
+        });
+    })();
+    </script>
+</body>
+</html>

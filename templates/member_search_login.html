@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card form-card member-login-card">
+    <h2>Member Search Login</h2>
+    <p class="section-note">Enter a mobile number from an approved member or approved family member record to view full details.</p>
+    <p class="section-note"><strong>Viewing:</strong> {{ profile['head_of_family'].get('full_name', '') or '-' }}</p>
+    <form id="memberSearchLoginForm" novalidate>
+        <input type="hidden" id="member_search_registration_id" value="{{ registration_id }}">
+        <div class="grid">
+            <label>
+                <span>Mobile Number</span>
+                <input id="member_search_mobile" type="tel" name="mobile_number" required placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" inputmode="numeric">
+            </label>
+            <div class="otp-block full-width">
+                <label>
+                    <span>OTP</span>
+                    <input id="member_search_otp" type="text" name="otp" placeholder="Enter 6-digit OTP" pattern="[0-9]{6}" maxlength="6" inputmode="numeric">
+                </label>
+                <div class="otp-actions">
+                    <button type="button" id="memberSearchSendOtp" class="btn-secondary">Send OTP</button>
+                    <button type="button" id="memberSearchVerifyOtp" class="btn-primary">Login</button>
+                    <span id="memberSearchOtpStatus" class="otp-status">OTP not verified</span>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="button-row">
+        <a class="btn-link" href="{{ url_for('member_search') }}">Back to Member Search</a>
+    </div>
+</section>
+
+<script>
+(() => {
+    const mobileInput = document.getElementById("member_search_mobile");
+    const otpInput = document.getElementById("member_search_otp");
+    const sendButton = document.getElementById("memberSearchSendOtp");
+    const verifyButton = document.getElementById("memberSearchVerifyOtp");
+    const status = document.getElementById("memberSearchOtpStatus");
+    const registrationId = document.getElementById("member_search_registration_id");
+
+    if (!mobileInput || !otpInput || !sendButton || !verifyButton || !status || !registrationId) {
+        return;
+    }
+
+    const showPopup = (message, category = "error") => {
+        const oldAlerts = document.querySelector(".alerts");
+        if (oldAlerts) oldAlerts.remove();
+        const alerts = document.createElement("section");
+        alerts.className = "alerts no-print";
+        alerts.setAttribute("aria-live", "polite");
+        alerts.setAttribute("aria-atomic", "true");
+
+        const alert = document.createElement("div");
+        alert.className = `alert ${category}`;
+        alert.setAttribute("role", "alert");
+
+        const text = document.createElement("span");
+        text.className = "alert-message";
+        text.textContent = message;
+
+        const closeButton = document.createElement("button");
+        closeButton.type = "button";
+        closeButton.className = "alert-close";
+        closeButton.setAttribute("aria-label", "Close message");
+        closeButton.textContent = "x";
+        closeButton.addEventListener("click", () => alerts.remove());
+
+        alert.appendChild(text);
+        alert.appendChild(closeButton);
+        alerts.appendChild(alert);
+        document.body.appendChild(alerts);
+    };
+
+    const setOtpStatus = (message, isVerified) => {
+        status.textContent = message;
+        status.classList.toggle("verified", Boolean(isVerified));
+        status.classList.toggle("pending", !isVerified);
+    };
+
+    sendButton.addEventListener("click", async () => {
+        const mobileNumber = mobileInput.value.trim();
+        if (!/^\d{10}$/.test(mobileNumber)) {
+            showPopup("Please enter a valid 10-digit mobile number.", "error");
+            return;
+        }
+
+        sendButton.disabled = true;
+        sendButton.textContent = "Sending...";
+        try {
+            const response = await fetch("/api/member-search/send-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ mobile_number: mobileNumber }).toString(),
+            });
+            const data = await response.json();
+            if (!response.ok || !data.ok) {
+                throw new Error(data.message || "Could not send OTP.");
+            }
+            otpInput.value = "";
+            setOtpStatus("OTP sent. Please verify.", false);
+            showPopup(data.message, "success");
+        } catch (error) {
+            showPopup(error.message || "Could not send OTP.", "error");
+        } finally {
+            sendButton.disabled = false;
+            sendButton.textContent = "Send OTP";
+        }
+    });
+
+    verifyButton.addEventListener("click", async () => {
+        const mobileNumber = mobileInput.value.trim();
+        const otp = otpInput.value.trim();
+        verifyButton.disabled = true;
+        verifyButton.textContent = "Logging in...";
+        try {
+            const response = await fetch("/api/member-search/verify-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ mobile_number: mobileNumber, otp }).toString(),
+            });
+            const data = await response.json();
+            if (!response.ok || !data.ok) {
+                throw new Error(data.message || "Could not verify OTP.");
+            }
+            setOtpStatus("OTP verified", true);
+            window.location.href = `/member-search/${registrationId.value}`;
+        } catch (error) {
+            setOtpStatus("OTP not verified", false);
+            showPopup(error.message || "Could not verify OTP.", "error");
+        } finally {
+            verifyButton.disabled = false;
+            verifyButton.textContent = "Login";
+        }
+    });
+})();
+</script>
+{% endblock %}

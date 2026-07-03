@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card bookings-card">
+    <div class="member-directory-header">
+        <h2>Admin Panel - Member Directory</h2>
+        <div class="button-row">
+            <form method="post" action="{{ url_for('admin_member_import') }}">
+                <button type="submit" class="btn-primary">Import Data From ajs.xlsx</button>
+            </form>
+            <a class="btn-secondary" href="{{ url_for('admin_new_memberships') }}">New Membership Requests</a>
+            <a class="btn-secondary" href="{{ url_for('admin_advertise_members') }}">Advertise Members</a>
+            <a class="btn-secondary" href="{{ url_for('admin_discount_interest_members') }}">Discount Interest Members</a>
+            <a class="btn-secondary" href="{{ url_for('admin_pathshala_interest_members') }}">Pathshala Interest Members</a>
+            <a class="btn-secondary" href="{{ url_for('admin_sangh_activity_interest') }}">Sangh Activity Interest</a>
+        </div>
+    </div>
+
+    <p class="section-note">Use Approve to publish registered members. Import loads master member data from <code>ajs.xlsx</code> into approved records.</p>
+
+    <form method="post" action="{{ url_for('admin_update_marquee') }}" class="admin-marquee-form">
+        <label>
+            <span>Marquee Text</span>
+            <textarea name="marquee_text" rows="2" placeholder="Enter announcement text">{{ marquee_text }}</textarea>
+        </label>
+        <button type="submit" class="btn-primary">Save Marquee</button>
+    </form>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Status</th>
+                    <th>Head Name</th>
+                    <th>Membership No.</th>
+                    <th>Mobile</th>
+                    <th>City</th>
+                    <th>Matrimony</th>
+                    <th>Business</th>
+                    <th>Fees</th>
+                    <th>Family Members</th>
+                    <th>Created At</th>
+                    <th>Updated At</th>
+                    <th>Approved At</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registration in registrations %}
+                    <tr>
+                        <td>{{ registration['id'] }}</td>
+                        <td><span class="status-badge status-{{ registration['approval_status'] }}">{{ registration['approval_status']|title }}</span></td>
+                        <td>{{ registration['head_name'] or '-' }}</td>
+                        <td>{{ registration['membership_number'] or '-' }}</td>
+                        <td>{{ registration['mobile_number'] }}</td>
+                        <td>{{ registration['city'] or '-' }}</td>
+                        <td>{{ 'Yes' if registration['show_in_matrimony'] else 'No' }}</td>
+                        <td>{{ registration['business_name'] or '-' }}</td>
+                        <td>
+                            {% if registration['fees_details'] %}
+                                {% for fee in registration['fees_details'] %}
+                                    <div>{{ fee.get('year', '') or '-' }}: {{ fee.get('amount', '') or '-' }}</div>
+                                {% endfor %}
+                            {% else %}
+                                -
+                            {% endif %}
+                            <form method="post" action="{{ url_for('admin_member_add_fee', registration_id=registration['id']) }}" class="admin-inline-form">
+                                <input type="text" name="year" placeholder="Year" required>
+                                <input type="text" name="amount" placeholder="Fees paid" required>
+                                <button type="submit" class="btn-secondary">Add</button>
+                            </form>
+                        </td>
+                        <td>{{ registration['family_count'] }}</td>
+                        <td>{{ registration['created_at'] }}</td>
+                        <td>{{ registration['updated_at'] }}</td>
+                        <td>{{ registration['approved_at'] or '-' }}</td>
+                        <td>
+                            <div class="admin-actions">
+                                {% if registration['approval_status'] == 'approved' %}
+                                    <form method="post" action="{{ url_for('admin_member_mark_pending', registration_id=registration['id']) }}">
+                                        <button type="submit" class="btn-secondary">Mark Pending</button>
+                                    </form>
+                                {% else %}
+                                    <form method="post" action="{{ url_for('admin_member_approve', registration_id=registration['id']) }}">
+                                        <button type="submit" class="btn-primary">Approve</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="14">No member registrations found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="admin-cards-wrap">
+        <h3>Card View</h3>
+        <div class="admin-cards">
+            {% for registration in registrations %}
+                <article class="admin-booking-card">
+                    <div class="admin-card-grid">
+                        <p><strong>ID:</strong> {{ registration['id'] }}</p>
+                        <p><strong>Status:</strong> <span class="status-badge status-{{ registration['approval_status'] }}">{{ registration['approval_status']|title }}</span></p>
+                        <p><strong>Head Name:</strong> {{ registration['head_name'] or '-' }}</p>
+                        <p><strong>Membership No.:</strong> {{ registration['membership_number'] or '-' }}</p>
+                        <p><strong>Mobile:</strong> {{ registration['mobile_number'] }}</p>
+                        <p><strong>City:</strong> {{ registration['city'] or '-' }}</p>
+                        <p><strong>Matrimony:</strong> {{ 'Yes' if registration['show_in_matrimony'] else 'No' }}</p>
+                        <p><strong>Business:</strong> {{ registration['business_name'] or '-' }}</p>
+                        <div>
+                            <strong>Fees:</strong>
+                            {% if registration['fees_details'] %}
+                                {% for fee in registration['fees_details'] %}
+                                    <p>{{ fee.get('year', '') or '-' }}: {{ fee.get('amount', '') or '-' }}</p>
+                                {% endfor %}
+                            {% else %}
+                                <p>-</p>
+                            {% endif %}
+                        </div>
+                        <p><strong>Family Members:</strong> {{ registration['family_count'] }}</p>
+                        <p><strong>Created At:</strong> {{ registration['created_at'] }}</p>
+                        <p><strong>Updated At:</strong> {{ registration['updated_at'] }}</p>
+                        <p><strong>Approved At:</strong> {{ registration['approved_at'] or '-' }}</p>
+                    </div>
+                    <div class="admin-actions">
+                        <form method="post" action="{{ url_for('admin_member_add_fee', registration_id=registration['id']) }}" class="admin-inline-form">
+                            <input type="text" name="year" placeholder="Year" required>
+                            <input type="text" name="amount" placeholder="Fees paid" required>
+                            <button type="submit" class="btn-secondary">Add Fee</button>
+                        </form>
+                        {% if registration['approval_status'] == 'approved' %}
+                            <form method="post" action="{{ url_for('admin_member_mark_pending', registration_id=registration['id']) }}">
+                                <button type="submit" class="btn-secondary">Mark Pending</button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{{ url_for('admin_member_approve', registration_id=registration['id']) }}">
+                                <button type="submit" class="btn-primary">Approve</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </article>
+            {% else %}
+                <p class="empty">No member registrations found.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="button-row">
+        <a href="{{ url_for('admin_logout') }}" class="btn-link">Logout Admin</a>
+    </div>
+</section>
+{% endblock %}

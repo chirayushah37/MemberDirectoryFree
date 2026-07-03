@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card member-directory-summary">
+    <div class="member-directory-header">
+        <div>
+            <h2>Matrimony</h2>
+            <p class="section-note">Showing approved member profiles that opted in for matrimony display.</p>
+        </div>
+    </div>
+</section>
+
+<section class="card member-section-card">
+    {% if profiles %}
+        <div class="matrimony-grid">
+            {% for profile in profiles %}
+                <article class="matrimony-card">
+                    <h3>{{ profile['full_name'] or 'Member Profile' }}</h3>
+                    <p class="matrimony-meta"><strong>Membership No.:</strong> {{ profile['membership_number'] or '-' }}</p>
+                    <p><strong>City:</strong> {{ profile['city'] or '-' }}</p>
+                    <p><strong>Address:</strong> {{ profile['address'] or '-' }}</p>
+                    <p><strong>Pincode:</strong> {{ profile['pincode'] or '-' }}</p>
+                    <p><strong>Mobile:</strong> {{ profile['mobile_number'] or '-' }}</p>
+                    <p><strong>Email:</strong> {{ profile['email'] or '-' }}</p>
+                    <p><strong>Business:</strong> {{ profile['business_name'] or '-' }}</p>
+                    <p><strong>Designation:</strong> {{ profile['designation'] or '-' }}</p>
+                    <p><strong>Business Type:</strong> {{ profile['business_type'] or '-' }}</p>
+                    <p><strong>Website:</strong> {{ profile['website'] or '-' }}</p>
+                    {% if profile['notes'] %}
+                        <p><strong>Notes:</strong> {{ profile['notes'] }}</p>
+                    {% endif %}
+
+                    {% if profile['family_members'] %}
+                        <h4>Family Members</h4>
+                        <div class="family-member-list">
+                            {% for member in profile['family_members'] %}
+                                <div class="family-member-row family-member-row-saved">
+                                    <p><strong>{{ loop.index }}. Name:</strong> {{ member['name'] or '-' }}</p>
+                                    <p><strong>Relation:</strong> {{ member['relation'] or '-' }}</p>
+                                    <p><strong>Sex:</strong> {{ member['sex'] or '-' }}</p>
+                                    <p><strong>Birthdate:</strong> {{ member['birthdate'] or '-' }}{% if member['calculated_age'] is not none %} (Age: {{ member['calculated_age'] }}){% endif %}</p>
+                                    <p><strong>Mobile Number:</strong> {{ member['mobile_number'] or '-' }}</p>
+                                    <p><strong>Blood Group:</strong> {{ member['blood_group'] or '-' }}</p>
+                                    <p><strong>Education:</strong> {{ member['education'] or '-' }}</p>
+                                    <p><strong>Occupation:</strong> {{ member['occupation'] or '-' }}</p>
+                                    <p><strong>Married:</strong> {% if member['calculated_age'] is not none and member['calculated_age'] > 18 %}{{ 'Yes' if member['married'] == '1' else 'No' }}{% else %}-{% endif %}</p>
+                                    <p><strong>Mahila Mandal:</strong> {{ 'Yes' if member['mahila_mandal_interest'] == '1' else 'No' }}</p>
+                                    <p><strong>Interested in Pathshala:</strong> {% if member['calculated_age'] is not none and member['calculated_age'] < 18 %}{{ 'Yes' if member['pathshala_interest'] == '1' else 'No' }}{% else %}-{% endif %}</p>
+                                    <p><strong>How can they help:</strong> {{ member['how_can_help'] or '-' }}</p>
+                                    <p><strong>Weekly Hours:</strong> {{ member['weekly_hours'] or '-' }}</p>
+                                    <p><strong>Area Interested:</strong> {{ member['area_interested']|join(', ') if member['area_interested'] else '-' }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <p class="section-note">Last updated: {{ profile['updated_at'] }}</p>
+                    <div class="button-row">
+                        <a class="btn-link" href="{{ url_for('member_search_login', registration_id=profile['registration_id']) }}">View</a>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty">No matrimony profiles are available right now.</p>
+    {% endif %}
+</section>
+{% endblock %}

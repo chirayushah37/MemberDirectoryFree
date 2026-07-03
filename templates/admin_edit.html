@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card form-card">
+    <h2>Edit Booking {{ booking['booking_number'] }}</h2>
+    <form method="post" novalidate>
+        <div class="grid">
+            <label>
+                <span>Booking Number</span>
+                <input type="text" name="booking_number" required value="{{ form_data.get('booking_number', '') }}">
+            </label>
+            <label>
+                <span>Date</span>
+                <input type="date" name="booking_date" required value="{{ form_data.get('booking_date', '') }}" max="{{ last_booking_date }}">
+            </label>
+            <label>
+                <span>Name</span>
+                <input type="text" name="name" required value="{{ form_data.get('name', '') }}">
+            </label>
+            <label>
+                <span>Membership Number</span>
+                <input type="text" name="membership_number" required value="{{ form_data.get('membership_number', '') }}">
+            </label>
+            <label>
+                <span>Pratimaji</span>
+                <select name="murti" required>
+                    <option value="">Select Pratimaji</option>
+                    {% for murti in murtis %}
+                        <option value="{{ murti }}" {% if form_data.get('murti') == murti %}selected{% endif %}>{{ murti }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label class="full-width">
+                <span>Address</span>
+                <textarea name="address" required>{{ form_data.get('address', '') }}</textarea>
+            </label>
+            <label>
+                <span>Mobile Number</span>
+                <input type="tel" name="mobile_number" required value="{{ form_data.get('mobile_number', '') }}" pattern="[0-9]{10}" maxlength="10" inputmode="numeric">
+            </label>
+            <label>
+                <span>Edit Password</span>
+                <input type="password" name="edit_password" required placeholder="Enter edit password">
+            </label>
+        </div>
+        <div class="button-row">
+            <button type="submit" class="btn-primary">Save Changes</button>
+            <a href="{{ url_for('admin') }}" class="btn-secondary">Back to Admin</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card member-directory-summary">
+    <div class="member-directory-header">
+        <div>
+            <h2>Scan QR Code</h2>
+            <p class="section-note">Scan a member QR code to verify approval and recent fee payment.</p>
+        </div>
+    </div>
+</section>
+
+<section class="card member-section-card qr-scanner-card">
+    <video id="qrVideo" class="qr-video" autoplay muted playsinline></video>
+    <p class="section-note" id="scanStatus">Starting camera...</p>
+    <div class="button-row">
+        <button type="button" class="btn-primary" id="startScanButton">Start Scanner</button>
+        <button type="button" class="btn-secondary" id="stopScanButton">Stop Scanner</button>
+    </div>
+    <form class="qr-manual-form" id="manualQrForm">
+        <label>
+            <span>Verification URL</span>
+            <input type="text" id="manualQrValue" placeholder="Paste QR verification URL">
+        </label>
+        <button type="submit" class="btn-secondary">Verify</button>
+    </form>
+</section>
+
+<script>
+(() => {
+    const video = document.getElementById("qrVideo");
+    const status = document.getElementById("scanStatus");
+    const startButton = document.getElementById("startScanButton");
+    const stopButton = document.getElementById("stopScanButton");
+    const manualForm = document.getElementById("manualQrForm");
+    const manualInput = document.getElementById("manualQrValue");
+    let stream = null;
+    let scanTimer = null;
+    let detector = null;
+
+    const goToQrValue = (value) => {
+        const trimmed = (value || "").trim();
+        if (!trimmed) return;
+        try {
+            const url = new URL(trimmed, window.location.origin);
+            if (url.origin === window.location.origin && url.pathname.startsWith("/qrcode/verify/")) {
+                window.location.href = url.href;
+                return;
+            }
+            status.textContent = "This QR code is not a valid member verification QR.";
+        } catch {
+            window.location.href = `/qrcode/verify/${encodeURIComponent(trimmed)}`;
+        }
+    };
+
+    const stopScanner = () => {
+        if (scanTimer) window.clearInterval(scanTimer);
+        scanTimer = null;
+        if (stream) {
+            stream.getTracks().forEach((track) => track.stop());
+        }
+        stream = null;
+        video.srcObject = null;
+        status.textContent = "Scanner stopped.";
+    };
+
+    const startScanner = async () => {
+        if (!("BarcodeDetector" in window)) {
+            status.textContent = "Camera QR scanning is not supported in this browser. Paste the QR link below.";
+            return;
+        }
+        detector = detector || new BarcodeDetector({ formats: ["qr_code"] });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = stream;
+        status.textContent = "Point the camera at the QR code.";
+        scanTimer = window.setInterval(async () => {
+            if (!detector || video.readyState < 2) return;
+            const codes = await detector.detect(video);
+            if (codes.length) {
+                stopScanner();
+                goToQrValue(codes[0].rawValue);
+            }
+        }, 500);
+    };
+
+    startButton.addEventListener("click", () => {
+        startScanner().catch(() => {
+            status.textContent = "Could not start camera. Paste the QR link below.";
+        });
+    });
+    stopButton.addEventListener("click", stopScanner);
+    manualForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        goToQrValue(manualInput.value);
+    });
+    startScanner().catch(() => {
+        status.textContent = "Could not start camera. Paste the QR link below.";
+    });
+})();
+</script>
+{% endblock %}

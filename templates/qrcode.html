@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card member-directory-summary">
+    <div class="member-directory-header">
+        <div>
+            <h2>Member QR Code</h2>
+            <p class="section-note">Share this QR code for fee verification.</p>
+        </div>
+        <div class="status-badge status-{{ registration['approval_status'] }}">{{ registration['approval_status']|title }}</div>
+    </div>
+    <div class="summary-grid">
+        <p><strong>Name:</strong> {{ head_of_family.get('full_name', '') or '-' }}</p>
+        <p><strong>Membership No.:</strong> {{ head_of_family.get('membership_number', '') or '-' }}</p>
+        <p><strong>Mobile:</strong> {{ registration['mobile_number'] or '-' }}</p>
+        <p><strong>Fees Check:</strong> {{ fee_status['current_year'] }} or {{ fee_status['previous_year'] }}</p>
+        <p><strong>Fees Paid:</strong> {{ 'Yes' if fee_status['has_recent_fee'] else 'No' }}</p>
+    </div>
+</section>
+
+<section class="card member-section-card qr-card">
+    {% if qr_code_available %}
+        <img class="qr-image" src="{{ url_for('qrcode_image') }}" alt="Member verification QR code">
+        <div class="button-row">
+            <a class="btn-primary" href="{{ url_for('qrcode_image', download='1') }}">Download QR Code</a>
+            <button type="button" class="btn-secondary" id="shareQrButton">Share Link</button>
+        </div>
+    {% else %}
+        <p class="empty">QR code package is not installed on the server. Please install updated requirements.txt.</p>
+    {% endif %}
+    <p class="section-note qr-link-text" id="verificationUrl">{{ verification_url }}</p>
+</section>
+
+<script>
+(() => {
+    const shareButton = document.getElementById("shareQrButton");
+    const verificationUrl = document.getElementById("verificationUrl")?.textContent.trim();
+    if (!shareButton || !verificationUrl) return;
+
+    shareButton.addEventListener("click", async () => {
+        if (navigator.share) {
+            await navigator.share({ title: "Member QR Verification", url: verificationUrl });
+            return;
+        }
+        await navigator.clipboard.writeText(verificationUrl);
+        shareButton.textContent = "Link Copied";
+        window.setTimeout(() => {
+            shareButton.textContent = "Share Link";
+        }, 1600);
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card form-card" style="max-width:520px;margin-inline:auto;">
+    <h2>Admin Login</h2>
+    <form method="post">
+        <input type="hidden" name="next" value="{{ next_url }}">
+        <label>
+            <span>Password</span>
+            <input type="password" name="password" required placeholder="Enter admin password">
+        </label>
+        <button type="submit" class="btn-primary">Open Admin Panel</button>
+    </form>
+</section>
+{% endblock %}

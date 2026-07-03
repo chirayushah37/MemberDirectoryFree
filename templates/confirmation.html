@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card confirmation-card" id="confirmationCard">
+    <h2>Booking Confirmed</h2>
+    <p>સુરક્ષા કારણોસર પ્રતિમાજીનું મૂલ્ય કે વજન નો કોઈપણ જગ્યાએ ઉલ્લેખ કરવો નહિ.</p>
+    <div class="confirmation-grid">
+        <p><strong>Booking Number:</strong> {{ booking['booking_number'] }}</p>
+        <p><strong>Date:</strong> {{ booking['booking_date'] }}</p>
+        <p><strong>Name:</strong> {{ booking['name'] }}</p>
+        <p><strong>Membership Number:</strong> {{ booking['membership_number'] }}</p>
+        <p><strong>Pratimaji:</strong> {{ booking['murti'] }}</p>
+        <p><strong>Address:</strong> {{ booking['address'] }}</p>
+        <p><strong>Mobile Number:</strong> {{ booking['mobile_number'] }}</p>
+        <p><strong>Submitted At (IST):</strong> {{ booking['created_at'] }}</p>
+    </div>
+    <div class="button-row no-print">
+        <a class="btn-primary" href="{{ url_for('download_confirmation', booking_id=booking['id']) }}">Save as PDF</a>
+        <button class="btn-secondary" onclick="window.print()">Print</button>
+        <a class="btn-link" href="{{ url_for('index') }}">Member Directory</a>
+    </div>
+</section>
+{% endblock %}

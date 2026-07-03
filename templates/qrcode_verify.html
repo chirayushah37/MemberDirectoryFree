@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card member-directory-summary">
+    <div class="member-directory-header">
+        <div>
+            <h2>QR Verification</h2>
+            {% if valid %}
+                <p class="section-note">Verified against member directory records.</p>
+            {% else %}
+                <p class="section-note">This QR code is invalid or no longer exists.</p>
+            {% endif %}
+        </div>
+        {% if valid %}
+            <div class="status-badge status-{{ registration['approval_status'] }}">{{ registration['approval_status']|title }}</div>
+        {% endif %}
+    </div>
+</section>
+
+{% if valid %}
+    <section class="card member-section-card">
+        <div class="summary-grid">
+            <p><strong>Name:</strong> {{ head_of_family.get('full_name', '') or '-' }}</p>
+            <p><strong>Membership No.:</strong> {{ head_of_family.get('membership_number', '') or '-' }}</p>
+            <p><strong>Mobile:</strong> {{ registration['mobile_number'] or '-' }}</p>
+            <p><strong>Status:</strong> {{ registration['approval_status']|title }}</p>
+            <p><strong>Fee Years Checked:</strong> {{ fee_status['current_year'] }} or {{ fee_status['previous_year'] }}</p>
+            <p><strong>Fees Paid:</strong> {{ 'Yes' if fee_status['has_recent_fee'] else 'No' }}</p>
+        </div>
+        {% if fee_status['matched_fees'] %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>Fees Paid</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fee in fee_status['matched_fees'] %}
+                            <tr>
+                                <td>{{ fee['year'] }}</td>
+                                <td>{{ fee['amount'] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </section>
+{% else %}
+    <section class="card member-section-card">
+        <p class="empty">Unable to verify this QR code.</p>
+    </section>
+{% endif %}
+{% endblock %}

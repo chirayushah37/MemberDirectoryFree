@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card member-directory-summary">
+    <div class="member-directory-header">
+        <div>
+            <h2>Job Listing</h2>
+            <p class="section-note">Showing approved members whose occupation is Service.</p>
+        </div>
+    </div>
+</section>
+
+<section class="card member-section-card">
+    {% if profiles %}
+        <div class="matrimony-grid">
+            {% for profile in profiles %}
+                <article class="matrimony-card">
+                    <h3>{{ profile['name'] or 'Member' }}</h3>
+                    <p><strong>Relation:</strong> {{ profile['relation'] or '-' }}</p>
+                    <p><strong>Head Of Family:</strong> {{ profile['head_of_family'] or '-' }}</p>
+                    <p><strong>Membership No.:</strong> {{ profile['membership_number'] or '-' }}</p>
+                    <p><strong>Sex:</strong> {{ profile['sex'] or '-' }}</p>
+                    <p><strong>Birthdate:</strong> {{ profile['birthdate'] or '-' }}</p>
+                    <p><strong>Education:</strong> {{ profile['education'] or '-' }}</p>
+                    <p><strong>Occupation:</strong> {{ profile['occupation'] or '-' }}</p>
+                    <p><strong>Mobile:</strong> {{ profile['mobile_number'] or '-' }}</p>
+                    {% if profile['email'] %}
+                        <p><strong>Email:</strong> {{ profile['email'] }}</p>
+                    {% endif %}
+                    <p><strong>City:</strong> {{ profile['city'] or '-' }}</p>
+                    <p><strong>Address:</strong> {{ profile['address'] or '-' }}</p>
+                    <p class="section-note">Last updated: {{ profile['updated_at'] }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty">No service members are available right now.</p>
+    {% endif %}
+</section>
+{% endblock %}

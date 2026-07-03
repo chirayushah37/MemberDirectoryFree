@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card bookings-card">
+    <h2>Admin Panel</h2>
+    <form method="post" action="{{ url_for('admin_update_marquee') }}" class="admin-marquee-form">
+        <label>
+            <span>Marquee Text</span>
+            <textarea name="marquee_text" rows="2" placeholder="Enter announcement text">{{ marquee_text }}</textarea>
+        </label>
+        <button type="submit" class="btn-primary">Save Marquee</button>
+    </form>
+    <form method="get" class="admin-filter-form">
+        <div class="admin-grid admin-grid-basic">
+            <label>
+                <span>Date (dd-MMM)</span>
+                <input type="text" name="booking_date" value="{{ filters['booking_date'] }}" placeholder="19-Mar">
+            </label>
+            <label>
+                <span>Weekday</span>
+                <select name="weekday">
+                    <option value="">All Weekdays</option>
+                    {% for day in weekdays %}
+                        <option value="{{ day }}" {% if filters['weekday'] == day %}selected{% endif %}>{{ day }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                <span>Pratimaji</span>
+                <select name="murti">
+                    <option value="">All Pratimaji</option>
+                    {% for murti_option in murtis %}
+                        <option value="{{ murti_option }}" {% if filters['murti'] == murti_option %}selected{% endif %}>{{ murti_option }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+
+        <label class="advanced-toggle">
+            <input type="checkbox" id="show_advanced" name="show_advanced" value="1" {% if show_advanced %}checked{% endif %}>
+            <span>Advanced Filters</span>
+        </label>
+
+        <div id="advanced_filters_panel" class="admin-grid admin-grid-advanced {% if not show_advanced %}hidden{% endif %}">
+            <label>
+                <span>ID</span>
+                <input type="text" name="id" value="{{ filters['id'] }}" placeholder="Filter by id">
+            </label>
+            <label>
+                <span>Booking Number</span>
+                <input type="text" name="booking_number" value="{{ filters['booking_number'] }}" placeholder="Filter by booking no.">
+            </label>
+            <label>
+                <span>Name</span>
+                <input type="text" name="name" value="{{ filters['name'] }}" placeholder="Filter by name">
+            </label>
+            <label>
+                <span>Membership Number</span>
+                <input type="text" name="membership_number" value="{{ filters['membership_number'] }}" placeholder="Filter by membership no.">
+            </label>
+            <label>
+                <span>Address</span>
+                <input type="text" name="address" value="{{ filters['address'] }}" placeholder="Filter by address">
+            </label>
+            <label>
+                <span>Mobile Number</span>
+                <input type="text" name="mobile_number" value="{{ filters['mobile_number'] }}" placeholder="Filter by mobile">
+            </label>
+            <label>
+                <span>Created At</span>
+                <input type="text" name="created_at" value="{{ filters['created_at'] }}" placeholder="Filter by created time (IST)">
+            </label>
+        </div>
+
+        <div class="button-row">
+            <button type="submit" class="btn-primary">Apply Filters</button>
+            <a href="{{ url_for('admin_new_memberships') }}" class="btn-secondary">New Membership Requests</a>
+            <a href="{{ url_for('admin_advertise_members') }}" class="btn-secondary">Advertise Members</a>
+            <a
+                href="{{ url_for('admin_export', id=filters['id'], booking_number=filters['booking_number'], booking_date=filters['booking_date'], weekday=filters['weekday'], name=filters['name'], membership_number=filters['membership_number'], murti=filters['murti'], address=filters['address'], mobile_number=filters['mobile_number'], created_at=filters['created_at'], sort_by=sort_by, sort_dir=sort_dir, show_advanced='1' if show_advanced else '') }}"
+                class="btn-secondary"
+            >Export to Excel</a>
+        </div>
+    </form>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    {% set next_id = 'asc' if sort_by != 'id' or sort_dir == 'desc' else 'desc' %}
+                    {% set next_booking_number = 'asc' if sort_by != 'booking_number' or sort_dir == 'desc' else 'desc' %}
+                    {% set next_booking_date = 'asc' if sort_by != 'booking_date' or sort_dir == 'desc' else 'desc' %}
+                    {% set next_name = 'asc' if sort_by != 'name' or sort_dir == 'desc' else 'desc' %}
+                    {% set next_membership_number = 'asc' if sort_by != 'membership_number' or sort_dir == 'desc' else 'desc' %}
+                    {% set next_murti = 'asc' if sort_by != 'murti' or sort_dir == 'desc' else 'desc' %}
+                    {% set next_address = 'asc' if sort_by != 'address' or sort_dir == 'desc' else 'desc' %}
+                    {% set next_mobile_number = 'asc' if sort_by != 'mobile_number' or sort_dir == 'desc' else 'desc' %}
+                    {% set next_created_at = 'asc' if sort_by != 'created_at' or sort_dir == 'desc' else 'desc' %}
+
+                    <th><a class="sort-link" href="{{ url_for('admin', id=filters['id'], booking_number=filters['booking_number'], booking_date=filters['booking_date'], weekday=filters['weekday'], name=filters['name'], membership_number=filters['membership_number'], murti=filters['murti'], address=filters['address'], mobile_number=filters['mobile_number'], created_at=filters['created_at'], sort_by='id', sort_dir=next_id, show_advanced='1' if show_advanced else '') }}">ID{% if sort_by == 'id' %} {{ '▲' if sort_dir == 'asc' else '▼' }}{% endif %}</a></th>
+                    <th><a class="sort-link" href="{{ url_for('admin', id=filters['id'], booking_number=filters['booking_number'], booking_date=filters['booking_date'], weekday=filters['weekday'], name=filters['name'], membership_number=filters['membership_number'], murti=filters['murti'], address=filters['address'], mobile_number=filters['mobile_number'], created_at=filters['created_at'], sort_by='booking_number', sort_dir=next_booking_number, show_advanced='1' if show_advanced else '') }}">Booking Number{% if sort_by == 'booking_number' %} {{ '▲' if sort_dir == 'asc' else '▼' }}{% endif %}</a></th>
+                    <th><a class="sort-link" href="{{ url_for('admin', id=filters['id'], booking_number=filters['booking_number'], booking_date=filters['booking_date'], weekday=filters['weekday'], name=filters['name'], membership_number=filters['membership_number'], murti=filters['murti'], address=filters['address'], mobile_number=filters['mobile_number'], created_at=filters['created_at'], sort_by='booking_date', sort_dir=next_booking_date, show_advanced='1' if show_advanced else '') }}">Date{% if sort_by == 'booking_date' %} {{ '▲' if sort_dir == 'asc' else '▼' }}{% endif %}</a></th>
+                    <th><a class="sort-link" href="{{ url_for('admin', id=filters['id'], booking_number=filters['booking_number'], booking_date=filters['booking_date'], weekday=filters['weekday'], name=filters['name'], membership_number=filters['membership_number'], murti=filters['murti'], address=filters['address'], mobile_number=filters['mobile_number'], created_at=filters['created_at'], sort_by='name', sort_dir=next_name, show_advanced='1' if show_advanced else '') }}">Name{% if sort_by == 'name' %} {{ '▲' if sort_dir == 'asc' else '▼' }}{% endif %}</a></th>
+                    <th><a class="sort-link" href="{{ url_for('admin', id=filters['id'], booking_number=filters['booking_number'], booking_date=filters['booking_date'], weekday=filters['weekday'], name=filters['name'], membership_number=filters['membership_number'], murti=filters['murti'], address=filters['address'], mobile_number=filters['mobile_number'], created_at=filters['created_at'], sort_by='membership_number', sort_dir=next_membership_number, show_advanced='1' if show_advanced else '') }}">Membership Number{% if sort_by == 'membership_number' %} {{ '▲' if sort_dir == 'asc' else '▼' }}{% endif %}</a></th>
+                    <th><a class="sort-link" href="{{ url_for('admin', id=filters['id'], booking_number=filters['booking_number'], booking_date=filters['booking_date'], weekday=filters['weekday'], name=filters['name'], membership_number=filters['membership_number'], murti=filters['murti'], address=filters['address'], mobile_number=filters['mobile_number'], created_at=filters['created_at'], sort_by='murti', sort_dir=next_murti, show_advanced='1' if show_advanced else '') }}">Pratimaji{% if sort_by == 'murti' %} {{ '▲' if sort_dir == 'asc' else '▼' }}{% endif %}</a></th>
+                    <th><a class="sort-link" href="{{ url_for('admin', id=filters['id'], booking_number=filters['booking_number'], booking_date=filters['booking_date'], weekday=filters['weekday'], name=filters['name'], membership_number=filters['membership_number'], murti=filters['murti'], address=filters['address'], mobile_number=filters['mobile_number'], created_at=filters['created_at'], sort_by='address', sort_dir=next_address, show_advanced='1' if show_advanced else '') }}">Address{% if sort_by == 'address' %} {{ '▲' if sort_dir == 'asc' else '▼' }}{% endif %}</a></th>
+                    <th><a class="sort-link" href="{{ url_for('admin', id=filters['id'], booking_number=filters['booking_number'], booking_date=filters['booking_date'], weekday=filters['weekday'], name=filters['name'], membership_number=filters['membership_number'], murti=filters['murti'], address=filters['address'], mobile_number=filters['mobile_number'], created_at=filters['created_at'], sort_by='mobile_number', sort_dir=next_mobile_number, show_advanced='1' if show_advanced else '') }}">Mobile Number{% if sort_by == 'mobile_number' %} {{ '▲' if sort_dir == 'asc' else '▼' }}{% endif %}</a></th>
+                    <th><a class="sort-link" href="{{ url_for('admin', id=filters['id'], booking_number=filters['booking_number'], booking_date=filters['booking_date'], weekday=filters['weekday'], name=filters['name'], membership_number=filters['membership_number'], murti=filters['murti'], address=filters['address'], mobile_number=filters['mobile_number'], created_at=filters['created_at'], sort_by='created_at', sort_dir=next_created_at, show_advanced='1' if show_advanced else '') }}">Created At (IST){% if sort_by == 'created_at' %} {{ '▲' if sort_dir == 'asc' else '▼' }}{% endif %}</a></th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                    <tr>
+                        <td>{{ booking['id'] }}</td>
+                        <td>{{ booking['booking_number'] }}</td>
+                        <td>{{ booking['booking_date_display'] }} ({{ booking['weekday'] }})</td>
+                        <td>{{ booking['name'] }}</td>
+                        <td>{{ booking['membership_number'] }}</td>
+                        <td>{{ booking['murti'] }}</td>
+                        <td>{{ booking['address'] }}</td>
+                        <td>{{ booking['mobile_number'] }}</td>
+                        <td>{{ booking['created_at'] }}</td>
+                        <td>
+                            <div class="admin-actions">
+                                <a href="{{ url_for('admin_edit', booking_id=booking['id']) }}" class="btn-secondary">Edit</a>
+                                <form method="post" action="{{ url_for('admin_delete', booking_id=booking['id']) }}" class="delete-form">
+                                    <input type="password" name="delete_password" placeholder="Delete password" required>
+                                    <button type="submit" class="btn-secondary">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="10">No matching bookings found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="admin-cards-wrap">
+        <h3>Card View</h3>
+        <div class="admin-cards">
+            {% for booking in bookings %}
+                <article class="admin-booking-card">
+                    <div class="admin-card-grid">
+                        <p><strong>ID:</strong> {{ booking['id'] }}</p>
+                        <p><strong>Booking Number:</strong> {{ booking['booking_number'] }}</p>
+                        <p><strong>Date:</strong> {{ booking['booking_date_display'] }} ({{ booking['weekday'] }})</p>
+                        <p><strong>Name:</strong> {{ booking['name'] }}</p>
+                        <p><strong>Membership Number:</strong> {{ booking['membership_number'] }}</p>
+                        <p><strong>Pratimaji:</strong> {{ booking['murti'] }}</p>
+                        <p><strong>Address:</strong> {{ booking['address'] }}</p>
+                        <p><strong>Mobile Number:</strong> {{ booking['mobile_number'] }}</p>
+                        <p><strong>Created At (IST):</strong> {{ booking['created_at'] }}</p>
+                    </div>
+                    <div class="admin-actions">
+                        <a href="{{ url_for('admin_edit', booking_id=booking['id']) }}" class="btn-secondary">Edit</a>
+                        <form method="post" action="{{ url_for('admin_delete', booking_id=booking['id']) }}" class="delete-form">
+                            <input type="password" name="delete_password" placeholder="Delete password" required>
+                            <button type="submit" class="btn-secondary">Delete</button>
+                        </form>
+                    </div>
+                </article>
+            {% else %}
+                <p class="empty">No matching bookings found.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="button-row">
+        <a href="{{ url_for('admin_members') }}" class="btn-secondary">Member Directory Admin</a>
+        <a href="{{ url_for('admin_logout') }}" class="btn-link">Logout Admin</a>
+    </div>
+</section>
+
+<script>
+(() => {
+    const toggle = document.getElementById('show_advanced');
+    const panel = document.getElementById('advanced_filters_panel');
+    if (!toggle || !panel) return;
+    const sync = () => {
+        panel.classList.toggle('hidden', !toggle.checked);
+    };
+    toggle.addEventListener('change', sync);
+    sync();
+})();
+</script>
+{% endblock %}

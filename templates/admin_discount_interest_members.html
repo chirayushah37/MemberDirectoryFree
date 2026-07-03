@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card bookings-card">
+    <div class="member-directory-header">
+        <h2>Admin Panel - Discount Interest Members</h2>
+        <div class="button-row">
+            <a class="btn-secondary" href="{{ url_for('admin_new_memberships') }}">New Membership Requests</a>
+            <a class="btn-secondary" href="{{ url_for('admin_advertise_members') }}">Advertise Members</a>
+            <a class="btn-secondary" href="{{ url_for('admin_pathshala_interest_members') }}">Pathshala Interest Members</a>
+            <a class="btn-secondary" href="{{ url_for('admin_sangh_activity_interest') }}">Sangh Activity Interest</a>
+            <a class="btn-secondary" href="{{ url_for('admin_members') }}">Member Directory Admin</a>
+        </div>
+    </div>
+
+    <p class="section-note">Members who selected "Are you interested in offering discount to sangh members"</p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Status</th>
+                    <th>Name</th>
+                    <th>Membership No.</th>
+                    <th>Mobile</th>
+                    <th>Phone</th>
+                    <th>Occupation</th>
+                    <th>City</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Updated At</th>
+                    <th>Approved At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profile in profiles %}
+                    <tr>
+                        <td>{{ profile['id'] }}</td>
+                        <td><span class="status-badge status-{{ profile['approval_status'] }}">{{ profile['approval_status']|title }}</span></td>
+                        <td>{{ profile['full_name'] or '-' }}</td>
+                        <td>{{ profile['membership_number'] or '-' }}</td>
+                        <td>{{ profile['mobile_number'] or '-' }}</td>
+                        <td>{{ profile['phone'] or '-' }}</td>
+                        <td>{{ profile['occupation'] or '-' }}</td>
+                        <td>{{ profile['city'] or '-' }}</td>
+                        <td>{{ profile['email'] or '-' }}</td>
+                        <td>{{ profile['address'] or '-' }}</td>
+                        <td>{{ profile['updated_at'] }}</td>
+                        <td>{{ profile['approved_at'] or '-' }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="12">No discount interest members found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

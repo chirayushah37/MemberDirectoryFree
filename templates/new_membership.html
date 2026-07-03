@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card member-directory-summary">
+    <div class="member-directory-header">
+        <div>
+            <h2>New Membership</h2>
+            <p class="section-note">Submit details for a new membership request.</p>
+            <p class="blink-notice">Membership will close on 30th sept</p>
+        </div>
+    </div>
+</section>
+
+<section class="card form-card">
+    <form method="post" novalidate>
+        <div class="grid">
+            <label>
+                <span>Name</span>
+                <input type="text" name="name" required value="{{ form_data.get('name', '') }}">
+            </label>
+            <label>
+                <span>Mobile</span>
+                <input type="tel" name="mobile_number" required value="{{ form_data.get('mobile_number', '') }}" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" inputmode="numeric">
+            </label>
+            <label>
+                <span>Existing Member Reference Name</span>
+                <input type="text" name="reference_name" required value="{{ form_data.get('reference_name', '') }}">
+            </label>
+            <label>
+                <span>Existing Member Membership number</span>
+                <input type="text" name="reference_membership_number" required value="{{ form_data.get('reference_membership_number', '') }}">
+            </label>
+        </div>
+        <div class="button-row">
+            <button type="submit" class="btn-primary">Submit Request</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

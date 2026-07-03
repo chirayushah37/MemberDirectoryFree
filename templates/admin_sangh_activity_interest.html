@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card bookings-card">
+    <div class="member-directory-header">
+        <h2>Admin Panel - Sangh Activity Interest</h2>
+        <div class="button-row">
+            <a class="btn-secondary" href="{{ url_for('admin_new_memberships') }}">New Membership Requests</a>
+            <a class="btn-secondary" href="{{ url_for('admin_advertise_members') }}">Advertise Members</a>
+            <a class="btn-secondary" href="{{ url_for('admin_discount_interest_members') }}">Discount Interest Members</a>
+            <a class="btn-secondary" href="{{ url_for('admin_pathshala_interest_members') }}">Pathshala Interest Members</a>
+            <a class="btn-secondary" href="{{ url_for('admin_members') }}">Member Directory Admin</a>
+        </div>
+    </div>
+
+    <form method="get" class="admin-filter-form">
+        <div class="admin-grid admin-grid-basic">
+            <label>
+                <span>Activity</span>
+                <select name="area">
+                    <option value="">All Activities</option>
+                    {% for area in activity_areas %}
+                        <option value="{{ area }}" {% if selected_area == area %}selected{% endif %}>{{ area }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <div class="button-row">
+            <button type="submit" class="btn-primary">Show Report</button>
+            <a class="btn-secondary" href="{{ url_for('admin_sangh_activity_interest') }}">Clear</a>
+        </div>
+    </form>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Registration ID</th>
+                    <th>Status</th>
+                    <th>Name</th>
+                    <th>Person Type</th>
+                    <th>Relation</th>
+                    <th>Membership No.</th>
+                    <th>Mobile</th>
+                    <th>Occupation</th>
+                    <th>Area Interested</th>
+                    <th>How Can Help</th>
+                    <th>Weekly Hours</th>
+                    <th>Head Of Family</th>
+                    <th>Updated At</th>
+                    <th>Approved At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profile in profiles %}
+                    <tr>
+                        <td>{{ profile['registration_id'] }}</td>
+                        <td><span class="status-badge status-{{ profile['approval_status'] }}">{{ profile['approval_status']|title }}</span></td>
+                        <td>{{ profile['name'] or '-' }}</td>
+                        <td>{{ profile['person_type'] }}</td>
+                        <td>{{ profile['relation'] or '-' }}</td>
+                        <td>{{ profile['membership_number'] or '-' }}</td>
+                        <td>{{ profile['mobile_number'] or '-' }}</td>
+                        <td>{{ profile['occupation'] or '-' }}</td>
+                        <td>{{ profile['area_interested'] or '-' }}</td>
+                        <td>{{ profile['how_can_help'] or '-' }}</td>
+                        <td>{{ profile['weekly_hours'] or '-' }}</td>
+                        <td>{{ profile['head_of_family'] or '-' }}</td>
+                        <td>{{ profile['updated_at'] }}</td>
+                        <td>{{ profile['approved_at'] or '-' }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="14">No Sangh Activity interest records found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

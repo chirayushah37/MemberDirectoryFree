@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card member-directory-summary">
+    <div class="member-directory-header">
+        <div>
+            <h2>Product Search</h2>
+            <p class="section-note">Showing approved product profiles that opted in for search.</p>
+        </div>
+    </div>
+</section>
+
+<section class="card member-section-card">
+    {% if profiles %}
+        <div class="matrimony-grid">
+            {% for profile in profiles %}
+                <article class="matrimony-card">
+                    <h3>{{ profile['business_name'] or 'Business Profile' }}</h3>
+                    <p><strong>Owner:</strong> {{ profile['full_name'] or '-' }}</p>
+                    <p><strong>Membership No.:</strong> {{ profile['membership_number'] or '-' }}</p>
+                    <p><strong>City:</strong> {{ profile['city'] or '-' }}</p>
+                    <p><strong>Business Type:</strong> {{ profile['business_type'] or '-' }}</p>
+                    <p><strong>Designation:</strong> {{ profile['designation'] or '-' }}</p>
+                    <p><strong>Business Contact Mobile:</strong> {{ profile['business_contact_mobile'] or '-' }}</p>
+                    <p><strong>Office Address:</strong> {{ profile['office_address'] or '-' }}</p>
+                    <p><strong>Website:</strong> {{ profile['website'] or '-' }}</p>
+                    {% if profile['notes'] %}
+                        <p><strong>Notes:</strong> {{ profile['notes'] }}</p>
+                    {% endif %}
+                    <p class="section-note">Last updated: {{ profile['updated_at'] }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty">No product profiles are available right now.</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card form-card">
+    <form method="post" novalidate>
+        <div class="grid">
+            <label>
+                <span>Date</span>
+                <input type="date" name="booking_date" required value="{{ form_data.get('booking_date', '') }}" min="{{ today_date }}" max="{{ last_booking_date }}">
+            </label>
+            <label class="name-field">
+                <span>Name</span>
+                <input id="name" type="text" name="name" list="memberSuggestions" autocomplete="off" required value="{{ form_data.get('name', '') }}" placeholder="Start typing name...">
+                <datalist id="memberSuggestions"></datalist>
+                <div id="memberSuggestionsList" class="member-suggestions-list hidden" role="listbox"></div>
+            </label>
+            <label>
+                <span>Membership Number</span>
+                <input id="membership_number" type="text" name="membership_number" required value="{{ form_data.get('membership_number', '') }}" placeholder="Membership no.">
+            </label>
+            <label>
+                <span>Pratimaji ( Nakro Rakam : Rs 1,800. )</span>
+                <select name="murti" required>
+                    <option value="">Select Pratimaji</option>
+                    {% for murti in murtis %}
+                        <option value="{{ murti }}" {% if form_data.get('murti') == murti %}selected{% endif %}>{{ murti }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label class="full-width">
+                <span>Address</span>
+                <textarea id="address" name="address" required placeholder="Complete address">{{ form_data.get('address', '') }}</textarea>
+            </label>
+            <label>
+                <span>Mobile Number</span>
+                <input id="mobile_number" type="tel" name="mobile_number" required value="{{ form_data.get('mobile_number', '') }}" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" title="Please enter exactly 10 digits">
+            </label>
+            <div class="otp-block full-width">
+                <label>
+                    <span>OTP</span>
+                    <input id="otp" type="text" name="otp" placeholder="Enter 6-digit OTP" pattern="[0-9]{6}" maxlength="6" inputmode="numeric">
+                </label>
+                <div class="otp-actions">
+                    <button type="button" id="sendOtpButton" class="btn-secondary">Send OTP</button>
+                    <button type="button" id="verifyOtpButton" class="btn-secondary">Verify OTP</button>
+                    <span id="otpStatus" class="otp-status">OTP not verified</span>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-primary">Submit Booking</button>
+    </form>
+</section>
+
+<section class="card bookings-card">
+    <h2>Previously Booked Dates Calendar</h2>
+    <div class="calendar-legend">
+        <span><i class="legend-box legend-none"></i> No booking</span>
+        <span><i class="legend-box legend-one"></i> 1 booking</span>
+        <span><i class="legend-box legend-two"></i> 2 bookings</span>
+    </div>
+    <div class="calendar-grid">
+        {% for month in calendar_months %}
+            <div class="month-card">
+                <h3>{{ month['month_name'] }}</h3>
+                <table class="month-table">
+                    <thead>
+                        <tr>
+                            <th>Mon</th>
+                            <th>Tue</th>
+                            <th>Wed</th>
+                            <th>Thu</th>
+                            <th>Fri</th>
+                            <th>Sat</th>
+                            <th>Sun</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for week in month['weeks'] %}
+                            <tr>
+                                {% for day in week %}
+                                    {% if not day['in_month'] %}
+                                        <td class="day-cell out-month"></td>
+                                    {% else %}
+                                        <td class="day-cell {% if day['count'] >= 2 %}booked-two{% elif day['count'] == 1 %}booked-one{% else %}booked-none{% endif %}">
+                                            <span>{{ day['day'] }}</span>
+                                        </td>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<div class="top-links no-print">
+    <a class="btn-link" href="{{ url_for('admin') }}">Admin Panel</a>
+    <a class="btn-link" href="{{ url_for('member_directory_login') }}">Member Directory</a>
+</div>
+
+<section class="card bookings-card">
+    <h2>Previously Booked Dates</h2>
+    {% if bookings %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Pratimaji</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                    <tr>
+                        <td>{{ booking['display_date'] }}</td>
+                        <td>{{ booking['murti'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="empty">No bookings yet.</p>
+    {% endif %}
+</section>
+
+<script>
+(() => {
+    const nameInput = document.getElementById("name");
+    const membershipInput = document.getElementById("membership_number");
+    const addressInput = document.getElementById("address");
+    const mobileInput = document.getElementById("mobile_number");
+    const otpInput = document.getElementById("otp");
+    const sendOtpButton = document.getElementById("sendOtpButton");
+    const verifyOtpButton = document.getElementById("verifyOtpButton");
+    const otpStatus = document.getElementById("otpStatus");
+    const suggestions = document.getElementById("memberSuggestions");
+    const suggestionsList = document.getElementById("memberSuggestionsList");
+
+    if (!nameInput || !membershipInput || !addressInput || !mobileInput || !otpInput || !sendOtpButton || !verifyOtpButton || !otpStatus || !suggestions || !suggestionsList) {
+        return;
+    }
+
+    let debounceTimer = null;
+    const displayToMember = new Map();
+    let verifiedMobile = "";
+    const userAgent = navigator.userAgent || "";
+    const isIPhoneSafari = /iPhone/i.test(userAgent) && /Safari/i.test(userAgent) && !/CriOS|FxiOS|EdgiOS/i.test(userAgent);
+
+    if (isIPhoneSafari) {
+        nameInput.removeAttribute("list");
+    }
+
+    const hideCustomSuggestions = () => {
+        suggestionsList.innerHTML = "";
+        suggestionsList.classList.add("hidden");
+    };
+
+    const renderCustomSuggestions = (entries) => {
+        if (!isIPhoneSafari || !entries.length) {
+            hideCustomSuggestions();
+            return;
+        }
+        suggestionsList.innerHTML = "";
+        const fragment = document.createDocumentFragment();
+        entries.forEach((entry) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "member-suggestion-option";
+            button.setAttribute("role", "option");
+            button.textContent = `${entry.name} (${entry.membership_number})`;
+            button.addEventListener("click", () => {
+                nameInput.value = entry.name;
+                applyEntry(entry);
+                hideCustomSuggestions();
+            });
+            fragment.appendChild(button);
+        });
+        suggestionsList.appendChild(fragment);
+        suggestionsList.classList.remove("hidden");
+    };
+
+    const showPopup = (message, category = "error") => {
+        const oldAlerts = document.querySelector(".alerts");
+        if (oldAlerts) oldAlerts.remove();
+        const alerts = document.createElement("section");
+        alerts.className = "alerts no-print";
+        alerts.setAttribute("aria-live", "polite");
+        alerts.setAttribute("aria-atomic", "true");
+
+        const alert = document.createElement("div");
+        alert.className = `alert ${category}`;
+        alert.setAttribute("role", "alert");
+
+        const text = document.createElement("span");
+        text.className = "alert-message";
+        text.textContent = message;
+
+        const closeButton = document.createElement("button");
+        closeButton.type = "button";
+        closeButton.className = "alert-close";
+        closeButton.setAttribute("aria-label", "Close message");
+        closeButton.textContent = "x";
+        closeButton.addEventListener("click", () => alerts.remove());
+
+        alert.appendChild(text);
+        alert.appendChild(closeButton);
+        alerts.appendChild(alert);
+        document.body.appendChild(alerts);
+    };
+
+    const setOtpStatus = (message, isVerified) => {
+        otpStatus.textContent = message;
+        otpStatus.classList.toggle("verified", Boolean(isVerified));
+        otpStatus.classList.toggle("pending", !isVerified);
+    };
+
+    const resetOtpState = () => {
+        verifiedMobile = "";
+        otpInput.value = "";
+        setOtpStatus("OTP not verified", false);
+    };
+
+    const applyEntry = (entry) => {
+        if (!entry) {
+            return;
+        }
+        if (entry.name) nameInput.value = entry.name;
+        if (entry.membership_number) membershipInput.value = entry.membership_number;
+        if (entry.address) addressInput.value = entry.address;
+        if (entry.mobile_number) mobileInput.value = entry.mobile_number;
+        resetOtpState();
+    };
+
+    const loadMemberDetails = async (membershipNumber, nameValue) => {
+        const params = new URLSearchParams();
+        if (membershipNumber) params.set("membership_number", membershipNumber);
+        if (nameValue) params.set("name", nameValue);
+        const response = await fetch(`/api/member-details?${params.toString()}`);
+        if (!response.ok) return;
+        const data = await response.json();
+        if (data.found) {
+            applyEntry(data);
+        }
+    };
+
+    const renderSuggestions = async (query) => {
+        if (isIPhoneSafari || query.length < 2) {
+            suggestions.innerHTML = "";
+            displayToMember.clear();
+            hideCustomSuggestions();
+            return;
+        }
+        const response = await fetch(`/api/members?q=${encodeURIComponent(query || "")}`);
+        if (!response.ok) return;
+        const data = await response.json();
+        suggestions.innerHTML = "";
+        displayToMember.clear();
+        const fragment = document.createDocumentFragment();
+        data.forEach((entry) => {
+            const option = document.createElement("option");
+            const displayValue = `${entry.name} (${entry.membership_number})`;
+            option.value = displayValue;
+            fragment.appendChild(option);
+            displayToMember.set(displayValue, entry);
+        });
+        suggestions.appendChild(fragment);
+        renderCustomSuggestions(data);
+    };
+
+    const tryAutofillFromSelection = () => {
+        const selected = displayToMember.get(nameInput.value);
+        if (selected) {
+            applyEntry(selected);
+            return true;
+        }
+        const match = nameInput.value.match(/^(.*)\s\(([A-Za-z0-9]+)\)$/);
+        if (match) {
+            nameInput.value = match[1].trim();
+            loadMemberDetails(match[2].trim(), "");
+            return true;
+        }
+        return false;
+    };
+
+    nameInput.addEventListener("input", () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            const query = nameInput.value.trim();
+            renderSuggestions(query);
+            tryAutofillFromSelection();
+        }, 250);
+    });
+
+    nameInput.addEventListener("blur", () => {
+        window.setTimeout(hideCustomSuggestions, 180);
+    });
+
+    nameInput.addEventListener("change", () => {
+        if (!tryAutofillFromSelection() && nameInput.value.trim()) {
+            loadMemberDetails("", nameInput.value.trim());
+        }
+    });
+
+    membershipInput.addEventListener("change", () => {
+        const membershipNumber = membershipInput.value.trim();
+        if (membershipNumber) {
+            loadMemberDetails(membershipNumber, "");
+        }
+    });
+
+    mobileInput.addEventListener("input", () => {
+        if (mobileInput.value.trim() !== verifiedMobile) {
+            resetOtpState();
+        }
+    });
+
+    sendOtpButton.addEventListener("click", async () => {
+        const mobileNumber = mobileInput.value.trim();
+        if (!/^\d{10}$/.test(mobileNumber)) {
+            showPopup("Please enter a valid 10-digit mobile number.", "error");
+            return;
+        }
+        sendOtpButton.disabled = true;
+        sendOtpButton.textContent = "Sending...";
+        try {
+            const response = await fetch("/api/send-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ mobile_number: mobileNumber }).toString(),
+            });
+            const data = await response.json();
+            if (!response.ok || !data.ok) {
+                throw new Error(data.message || "Could not send OTP.");
+            }
+            verifiedMobile = "";
+            otpInput.value = "";
+            setOtpStatus("OTP sent. Please verify.", false);
+            showPopup(data.message, "success");
+        } catch (error) {
+            showPopup(error.message || "Could not send OTP.", "error");
+        } finally {
+            sendOtpButton.disabled = false;
+            sendOtpButton.textContent = "Send OTP";
+        }
+    });
+
+    verifyOtpButton.addEventListener("click", async () => {
+        const mobileNumber = mobileInput.value.trim();
+        const otp = otpInput.value.trim();
+        verifyOtpButton.disabled = true;
+        verifyOtpButton.textContent = "Verifying...";
+        try {
+            const response = await fetch("/api/verify-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ mobile_number: mobileNumber, otp }).toString(),
+            });
+            const data = await response.json();
+            if (!response.ok || !data.ok) {
+                throw new Error(data.message || "Could not verify OTP.");
+            }
+            verifiedMobile = mobileNumber;
+            setOtpStatus("OTP verified", true);
+            showPopup(data.message, "success");
+        } catch (error) {
+            verifiedMobile = "";
+            setOtpStatus("OTP not verified", false);
+            showPopup(error.message || "Could not verify OTP.", "error");
+        } finally {
+            verifyOtpButton.disabled = false;
+            verifyOtpButton.textContent = "Verify OTP";
+        }
+    });
+})();
+</script>
+{% endblock %}

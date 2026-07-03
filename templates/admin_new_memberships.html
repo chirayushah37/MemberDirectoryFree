@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card bookings-card">
+    <div class="member-directory-header">
+        <h2>Admin Panel - New Membership Requests</h2>
+        <div class="button-row">
+            <a class="btn-secondary" href="{{ url_for('admin_members') }}">Member Directory Admin</a>
+            <a class="btn-secondary" href="{{ url_for('admin_advertise_members') }}">Advertise Members</a>
+            <a class="btn-secondary" href="{{ url_for('admin_discount_interest_members') }}">Discount Interest Members</a>
+            <a class="btn-secondary" href="{{ url_for('admin_pathshala_interest_members') }}">Pathshala Interest Members</a>
+            <a class="btn-secondary" href="{{ url_for('admin_sangh_activity_interest') }}">Sangh Activity Interest</a>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Existing Member Reference Name</th>
+                    <th>Existing Member Membership number</th>
+                    <th>Submitted At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request_row in requests %}
+                    <tr>
+                        <td>{{ request_row['id'] }}</td>
+                        <td>{{ request_row['name'] }}</td>
+                        <td>{{ request_row['mobile_number'] }}</td>
+                        <td>{{ request_row['reference_name'] }}</td>
+                        <td>{{ request_row['reference_membership_number'] }}</td>
+                        <td>{{ request_row['created_at'] }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6">No new membership requests found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

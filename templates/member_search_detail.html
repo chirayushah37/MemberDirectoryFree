@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card member-directory-summary">
+    <div class="member-directory-header">
+        <div>
+            <h2>Member Details</h2>
+            <p class="section-note">Viewed by mobile: <strong>{{ viewer_mobile }}</strong></p>
+        </div>
+    </div>
+    <div class="summary-grid">
+        <p><strong>Created:</strong> {{ profile['created_at'] or '-' }}</p>
+        <p><strong>Last Updated:</strong> {{ profile['updated_at'] or '-' }}</p>
+        <p><strong>Approved At:</strong> {{ profile['approved_at'] or '-' }}</p>
+    </div>
+    <div class="button-row">
+        <a class="btn-link" href="{{ url_for('member_search') }}">Back to Member Search</a>
+        <a class="btn-link" href="{{ url_for('member_search_logout') }}">Logout</a>
+    </div>
+</section>
+
+<section class="card member-section-card">
+    <h3>Head Of Family Details</h3>
+    <div class="family-member-row family-member-row-saved">
+        <p><strong>Full Name:</strong> {{ profile['head_of_family'].get('full_name', '') or '-' }}</p>
+        <p><strong>Membership Number:</strong> {{ profile['head_of_family'].get('membership_number', '') or '-' }}</p>
+        <p><strong>Sex:</strong> {{ profile['head_of_family'].get('sex', '') or '-' }}</p>
+        <p><strong>Birthdate:</strong> {{ profile['head_of_family'].get('birthdate', '') or '-' }}</p>
+        <p><strong>Mobile Number:</strong> {{ profile['head_of_family'].get('mobile_number', '') or profile['mobile_number'] or '-' }}</p>
+        <p><strong>Phone:</strong> {{ profile['head_of_family'].get('phone', '') or '-' }}</p>
+        <p><strong>Blood Group:</strong> {{ profile['head_of_family'].get('blood_group', '') or '-' }}</p>
+        <p><strong>Education:</strong> {{ profile['head_of_family'].get('education', '') or '-' }}</p>
+        <p><strong>Occupation:</strong> {{ profile['head_of_family'].get('occupation', '') or '-' }}</p>
+        <p><strong>Address:</strong> {{ profile['head_of_family'].get('address', '') or '-' }}</p>
+        <p><strong>City:</strong> {{ profile['head_of_family'].get('city', '') or '-' }}</p>
+        <p><strong>Pincode:</strong> {{ profile['head_of_family'].get('pincode', '') or '-' }}</p>
+        <p><strong>Email:</strong> {{ profile['head_of_family'].get('email', '') or '-' }}</p>
+        <p><strong>Would Like To Advertise:</strong> {{ 'Yes' if profile['head_of_family'].get('would_like_to_advertise', '0') == '1' else 'No' }}</p>
+    </div>
+</section>
+
+<section class="card member-section-card">
+    <h3>Family Members</h3>
+    {% if profile['family_members'] %}
+        <div class="family-member-list">
+            {% for member in profile['family_members'] %}
+                {% set member_activity = member.get('sangh_activity_interest', {}) %}
+                <div class="family-member-row family-member-row-saved">
+                    <p><strong>{{ loop.index }}. Name:</strong> {{ member.get('name', '') or '-' }}</p>
+                    <p><strong>Relation:</strong> {{ member.get('relation', '') or '-' }}</p>
+                    <p><strong>Sex:</strong> {{ member.get('sex', '') or '-' }}</p>
+                    <p><strong>Birthdate:</strong> {{ member.get('birthdate', '') or '-' }}{% if member.get('calculated_age') is not none %} (Age: {{ member.get('calculated_age') }}){% endif %}</p>
+                    <p><strong>Mobile Number:</strong> {{ member.get('mobile_number', '') or '-' }}</p>
+                    <p><strong>Blood Group:</strong> {{ member.get('blood_group', '') or '-' }}</p>
+                    <p><strong>Education:</strong> {{ member.get('education', '') or '-' }}</p>
+                    <p><strong>Occupation:</strong> {{ member.get('occupation', '') or '-' }}</p>
+                    <p><strong>Married:</strong> {% if member.get('calculated_age') is not none and member.get('calculated_age') > 18 %}{{ 'Yes' if member.get('married', '0') == '1' else 'No' }}{% else %}-{% endif %}</p>
+                    <p><strong>Mahila Mandal:</strong> {{ 'Yes' if member.get('mahila_mandal_interest', '0') == '1' else 'No' }}</p>
+                    <p><strong>Interested in Pathshala:</strong> {% if member.get('calculated_age') is not none and member.get('calculated_age') < 18 %}{{ 'Yes' if member.get('pathshala_interest', '0') == '1' else 'No' }}{% else %}-{% endif %}</p>
+                    <p><strong>Matrimony:</strong> {{ 'Yes' if member.get('show_in_matrimony', '0') == '1' else 'No' }}</p>
+                    <p><strong>How can they help:</strong> {{ member_activity.get('how_can_help', '') or '-' }}</p>
+                    <p><strong>Weekly Hours:</strong> {{ member_activity.get('weekly_hours', '') or '-' }}</p>
+                    <p><strong>Area Interested:</strong> {{ member_activity.get('area_interested', [])|join(', ') if member_activity.get('area_interested', []) else '-' }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty">No family members available.</p>
+    {% endif %}
+</section>
+
+<section class="card member-section-card">
+    <h3>Head Of Family Sangh Activity</h3>
+    {% set head_interest = profile['sangh_activity_interest'].get('head_of_family', {}) %}
+    <div class="family-member-row family-member-row-saved">
+        <p><strong>How can they help:</strong> {{ head_interest.get('how_can_help', '') or '-' }}</p>
+        <p><strong>Weekly Hours:</strong> {{ head_interest.get('weekly_hours', '') or '-' }}</p>
+        <p><strong>Area Interested:</strong> {{ head_interest.get('area_interested', [])|join(', ') if head_interest.get('area_interested', []) else '-' }}</p>
+    </div>
+</section>
+
+<section class="card member-section-card">
+    <h3>Business Details</h3>
+    <div class="family-member-row family-member-row-saved">
+        <p><strong>Business Name:</strong> {{ profile['business_details'].get('business_name', '') or '-' }}</p>
+        <p><strong>Business Type:</strong> {{ profile['business_details'].get('business_type', '') or '-' }}</p>
+        <p><strong>Designation:</strong> {{ profile['business_details'].get('designation', '') or '-' }}</p>
+        <p><strong>Business Contact Mobile:</strong> {{ profile['business_details'].get('business_contact_mobile', '') or '-' }}</p>
+        <p><strong>Office Address:</strong> {{ profile['business_details'].get('office_address', '') or '-' }}</p>
+        <p><strong>Website:</strong> {{ profile['business_details'].get('website', '') or '-' }}</p>
+        <p><strong>Notes:</strong> {{ profile['business_details'].get('notes', '') or '-' }}</p>
+        <p><strong>Show In Search:</strong> {{ 'Yes' if profile['business_details'].get('show_in_search', '0') == '1' else 'No' }}</p>
+    </div>
+</section>
+{% endblock %}
