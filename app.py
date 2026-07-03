@@ -1988,7 +1988,7 @@ def send_confirmation_email(booking: sqlite3.Row) -> None:
             "Email is not configured. Set TURBO_SMTP_CONSUMER_KEY and TURBO_SMTP_CONSUMER_SECRET."
         )
 
-    recipients = ["hyper9@gmail.com", "jrd@jrdshah.com"]
+    recipients = ["test9@gmail.com", "test@shah.com"]
     mail_from = os.getenv("TURBO_SMTP_FROM", "hello@your-company.com")
     subject = f"Booking Confirmation {booking['booking_number']} - {booking['booking_date']}"
     text_content = "\n".join(
