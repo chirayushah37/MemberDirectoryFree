@@ -1,30 +1,17 @@
-# Shree Alkpapuri Jain Sangh Booking App
+# Jain Sangh Directory
 
 ## Features
-- Python Flask web form with compulsory fields:
-  - Date
-  - Name
-  - Membership Number
-  - Pratimaji (4 options)
-  - Address
-  - Mobile Number
 - Member lookup from `ajs.xlsx` loaded at app startup into memory for all users:
   - Membership Number is generated from Excel Column A + Column B (example: `A1`)
   - Name field shows searchable suggestions from Excel
   - Selecting a member auto-fills Name, Membership Number, Address, and Mobile Number (when available)
-- Shows previous bookings as `Date, Pratimaji`
-- Booking rules:
-  - Sundays are blocked (`Booking is already done for Sundays`)
-  - Maximum 2 bookings per date
-  - Same Pratimaji cannot be booked twice on the same date
-  - No default or dummy Sunday bookings are auto-created
 - Local SQLite database (`bookings.db`)
 - Concurrency-safe writes using SQLite WAL + transactional insert + DB triggers
 - Confirmation page with Save as PDF + Print buttons
 - Unique booking number generated for every booking
 - Sends confirmation email via TurboSMTP API to:
-  - hyper9@gmail.com
-  - jrd@jrdshah.com
+  - test9@gmail.com
+  - test@shah.com
 - Admin panel:
   - Full booking list with all columns
   - Filters for every column
@@ -74,5 +61,7 @@
 - `templates/admin.html`: admin list + filters + export
 - `wsgi.py`: WSGI entrypoint for IIS
 - `web.config`: IIS FastCGI configuration
+
+- for launching for your jain sangh contact on chirayu@chirayusoftware.com
 - `templates/`: HTML templates
 - `static/style.css`: UI styles
