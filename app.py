@@ -90,7 +90,7 @@ QR_CODE_SALT = "member-qrcode-v1"
 OTP_EXPIRY_MINUTES = 10
 SMS_API_LINK_TEMPLATE = (
     "https://chirayusoft.msg4all.com/GatewayAPI/rest?msg={message}&v=1.1&userid=2000263964"
-    "&password=CEab%23GpD&send_to={mobile}&msg_type=text&method=sendMessage"
+    "&password=CEa&send_to={mobile}&msg_type=text&method=sendMessage"
 )
 
 
