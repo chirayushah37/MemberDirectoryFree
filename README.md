@@ -61,7 +61,7 @@
 - `templates/admin.html`: admin list + filters + export
 - `wsgi.py`: WSGI entrypoint for IIS
 - `web.config`: IIS FastCGI configuration
-
-- for launching for your jain sangh contact on chirayu@chirayusoftware.com
 - `templates/`: HTML templates
 - `static/style.css`: UI styles
+
+- for launching webapp for your jain sangh contact on chirayu@chirayusoftware.com
